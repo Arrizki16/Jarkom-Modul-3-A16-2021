@@ -193,7 +193,7 @@ Transaksi jual beli tidak dilakukan setiap hari, oleh karena itu akses internet 
 ```
 acl AVAILABLE_WORKING time MTWH 07:00-11:00
 acl AVAILABLE_WORKING time TWHF 17:00-23:59
-acl AVAILABLE_WORKING time A 00:00-03:00
+acl AVAILABLE_WORKING time WHFA 00:00-03:00
 ```
 * Tambahkan konfigurasi pada ```/etc/squid/squid.conf``` di Water7
 ```
