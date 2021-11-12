@@ -4,6 +4,7 @@ kelompok A16 : Deka Julian Arrizki
 
 ## **Konten**
 * [**Cara Pengerjaan**](#cara-pengerjaan)
+* [**Hasil Akhir**](#hasil-akhir)
 * [**Catatan**](#catatan)
 * [**Kendala**](#kendala)
 
@@ -21,11 +22,10 @@ service bind9 start
 ```
 apt-get update
 apt-get install isc-dhcp-server -y
-
-echo '
+```
+* DHCP Server interface pada ```/etc/default/isc-dhcp-server```
+```
 INTERFACES="eth0"
-' > /etc/default/isc-dhcp-server
-
 service isc-dhcp-server start
 ```
 * Setup Proxy Server
@@ -34,7 +34,13 @@ apt-get update
 apt-get install squid -y
 service squid start
 ```
-
+* Setup Web Server
+```
+apt-get update
+apt-get install php -y
+apt-get install apache2 -y
+apt-get install libapache2-mod-php7.0 -y
+```
 ### Nomor 2
 dan Foosha sebagai DHCP Relay
 * Setup DHCP Realy
@@ -127,6 +133,29 @@ host Skypie {
 ```
 ### Nomor 8
 Loguetown digunakan sebagai client Proxy agar transaksi jual beli dapat terjamin keamanannya, juga untuk mencegah kebocoran data transaksi. Pada Loguetown, proxy harus bisa diakses dengan nama jualbelikapal.yyy.com dengan port yang digunakan adalah 5000
+* Buat konfigurasi hosts pada enieslobby ```/etc/bind/named.conf.local```
+```
+zone "jualbelikapal.A16.com" {
+    type master;
+    file "/etc/bind/jarkom/jualbelikapal.A16.com";
+};
+```
+* Tambahkan konfigurasi DNS jualbelikapal.A16.com pada ```/etc/bind/jarkom/jualbelikapal.A16.com```
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     jualbelikapal.A16.com. root.jualbelikapal.A16.com. (
+                        2021110701      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@                       IN      NS      jualbelikapal.A16.com.
+@                       IN      A       10.7.2.3        ; IP Water7
+```
 * Konfigurasi pada ```/etc/squid/squid.conf``` di Water7
 ```
 http_port 5000
@@ -135,6 +164,10 @@ visible_hostname jualbelikapal.A16.com
 * Pasang proxy pada loguetown
 ```
 export http_proxy="http://jualbelikapal.A16.com:5000"
+```
+* Tambahkan hosts pada water7 di ```/etc/hosts``` untuk memastikan bahwa proxy menuju ke ip yang benar
+```
+10.7.2.3        jualbelikapal.A16.com
 ```
 ### Nomor 9
 Agar transaksi jual beli lebih aman dan pengguna website ada dua orang, proxy dipasang autentikasi user proxy dengan enkripsi MD5 dengan dua username, yaitu luffybelikapalyyy dengan password luffy_yyy dan zorobelikapalyyy dengan password zoro_yyy
@@ -177,6 +210,7 @@ http_access allow AVAILABLE_WORKING USERS
 ```
 ### Nomor 11
 Agar transaksi bisa lebih fokus berjalan, maka dilakukan redirect website agar mudah mengingat website transaksi jual beli kapal. Setiap mengakses google.com, akan diredirect menuju super.franky.yyy.com dengan website yang sama pada soal shift modul 2. Web server super.franky.yyy.com berada pada node Skypie
+
 * Tambahkan konfigurasi pada ```/etc/squid/squid.conf``` di Water7
 ```
 acl BLKSite dstdomain google.com
@@ -185,6 +219,45 @@ deny_info http://super.franky.A16.com BLKSite
 ```
 ### Nomor 12
 Saatnya berlayar! Luffy dan Zoro akhirnya memutuskan untuk berlayar untuk mencari harta karun di super.franky.yyy.com. Tugas pencarian dibagi menjadi dua misi, Luffy bertugas untuk mendapatkan gambar (.png, .jpg), sedangkan Zoro mendapatkan sisanya. Karena Luffy orangnya sangat teliti untuk mencari harta karun, ketika ia berhasil mendapatkan gambar, ia mendapatkan gambar dan melihatnya dengan kecepatan 10 kbps
+* Buat konfigurasi hosts pada enieslobby ```/etc/bind/named.conf.local```
+```
+zone "super.franky.A16.com" {
+    type master;
+    file "/etc/bind/jarkom/super.franky.A16.com";
+};
+```
+* Tambahkan konfigurasi DNS super.franky.A16.com pada ```/etc/bind/jarkom/super.franky.A16.com```
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     super.franky.A16.com. root.super.franky.A16.com. (
+                        2021110701      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@                       IN      NS      super.franky.A16.com.
+@                       IN      A       10.7.3.69        ; IP Skypie
+```
+* Setting web server skypie pada ```/etc/apache2/sites-available/000-default.conf```
+```
+<VirtualHost *:80>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/super.franky.A16.com
+        ServerName super.franky.A16.com
+        
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+```
+* Tambahkan hosts pada water7 di ```/etc/hosts``` untuk memastikan bahwa proxy menuju ke ip yang benar
+```
+10.7.3.69       super.franky.A16.com
+```
 * Buat konfigurasi pada ```/etc/squid/acl-bandwidth.conf```
 ```
 auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwd
@@ -205,6 +278,63 @@ Sedangkan, Zoro yang sangat bersemangat untuk mencari harta karun, sehingga kece
 ```
 delay_access 1 deny all
 ```
+## Hasil Akhir
+### IP masing-masing client
+* Loguetown
+![image](https://user-images.githubusercontent.com/55046884/141448320-eea17571-4591-4670-ace4-1966003c35fb.png)
+
+* Alabasta
+![image](https://user-images.githubusercontent.com/55046884/141448374-45a400f8-d871-4cb8-8f55-b0d9b467c501.png)
+
+* Tottoland
+![image](https://user-images.githubusercontent.com/55046884/141448428-f0a6ab3a-07c1-4dc0-a2b5-d5dd70ebed75.png)
+
+* Skypie
+![image](https://user-images.githubusercontent.com/55046884/141448476-914496af-d772-45cc-acbe-0bb57265cfdc.png)
+
+### Proxy
+* ```lynx jualbelikapal.A16.com```  
+![image](https://user-images.githubusercontent.com/55046884/141448639-c4213fee-8855-46a3-9d6e-3657122438f7.png)
+
+### Google.com
+* ```lynx google.com```  
+![image](https://user-images.githubusercontent.com/55046884/141449665-431e4f07-6fd5-4e32-9d7f-05cbeabd91a2.png)
+
+### Username & Password
+* username : luffybelikapalA16 pass : luffy_A16  
+![image](https://user-images.githubusercontent.com/55046884/141449554-20179391-e74b-41ac-bd98-4f12ff2a3467.png)
+
+* username : luffybelikapalA16 pass : luffy_A20  
+![image](https://user-images.githubusercontent.com/55046884/141449595-3cf635d1-52cf-4114-8d93-48c4606f1f67.png)
+
+### Akses Waktu
+* Setting waktu yang dibolehkan akses
+```
+date -s "20 Nov 2021 01:00:00"
+```
+* akses super.franky.A16.com  
+![image](https://user-images.githubusercontent.com/55046884/141449041-6ad815bd-f724-46d6-a03c-7689d31d5622.png)
+* Setting waktu yang tidak diperbolehkan akses
+```
+date -s "12 Nov 2021 12:00:00"
+```
+* akses super.franky.A16.com  
+![image](https://user-images.githubusercontent.com/55046884/141449253-c740e5fa-6771-4911-a003-12bed4c72160.png)
+
+### Bandwitdh
+* User : luffybelikapalA16
+* download eyeoffranky.jpg  
+![image](https://user-images.githubusercontent.com/55046884/141450128-6127fc81-36dc-461b-9991-b5cc8a64b63f.png)
+* download bukanfrankytapirandom.99689  
+![image](https://user-images.githubusercontent.com/55046884/141450191-0ce3eb41-aa76-42f0-b7c6-d8508d2ae837.png)
+
+* User : zorobelikapalA16
+* download eyeoffranky.jpg  
+![image](https://user-images.githubusercontent.com/55046884/141450496-4a379018-801b-4ef4-ae36-e891b7864ce0.png)
+
+* download bukanfrankytapirandom.99689  
+![image](https://user-images.githubusercontent.com/55046884/141450551-c2b1e0ca-35d2-4a1f-97e2-8e1a0ae0a7fc.png)
+
 ## Catatan
 1. Jangan lupa restart gan
 2. Kalau menggunakan VMWare harus di power off, jika di suspend akan bermasalah pada NAT nya
