@@ -65,7 +65,6 @@ subnet 10.7.1.0 netmask 255.255.255.0 {
     range 10.7.1.150 10.7.1.169;
     option routers 10.7.1.1;
     option broadcast-address 10.7.1.255;
-    option domain-name-servers 10.7.2.2;
 }
 ```
 ### Nomor 4
@@ -76,7 +75,6 @@ subnet 10.7.3.0 netmask 255.255.255.0 {
     range 10.7.3.30 10.7.3.50;
     option routers 10.7.3.1;
     option broadcast-address 10.7.3.255;
-    option domain-name-servers 10.7.2.2;
 }
 ```
 ### Nomor 5
