@@ -48,7 +48,7 @@ http_access allow AVAILABLE_WORKING USERS
 echo '
 acl AVAILABLE_WORKING time MTWH 07:00-11:00
 acl AVAILABLE_WORKING time TWHF 17:00-23:59
-acl AVAILABLE_WORKING time A 00:00-03:00
+acl AVAILABLE_WORKING time WHFA 00:00-03:00
 ' > /etc/squid/acl.conf
 
 echo '
